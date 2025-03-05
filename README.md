@@ -1,23 +1,36 @@
 # device_log_writter
 
+// Example usage:
 func main() {
-	hdfsAddr := "namenode:9000"
-	filePath := "/user/logs/user_device_logs.parquet"
+	// Initialize the service
+	service := NewDeviceLogService(
+		"hdfs://localhost:9000",
+		"/user/logs/device_logs.parquet",
+		"hadoop",
+	)
 
-	logger, err := NewHDFSLogger(hdfsAddr, filePath)
-	if err != nil {
-		log.Fatalf("Error initializing HDFS logger: %v", err)
-	}
-
-	// Sample logs
+	// Example: Writing multiple logs
 	logs := []UserDeviceLog{
-		{UserID: "user_123", DeviceID: "device_A1", Timestamp: time.Now().Format(time.RFC3339), Direction: "ENTRY"},
-		{UserID: "user_456", DeviceID: "device_B2", Timestamp: time.Now().Add(2 * time.Minute).Format(time.RFC3339), Direction: "ENTRY"},
-		{UserID: "user_123", DeviceID: "device_A1", Timestamp: time.Now().Add(10 * time.Minute).Format(time.RFC3339), Direction: "EXIT"},
-		{UserID: "user_456", DeviceID: "device_B2", Timestamp: time.Now().Add(20 * time.Minute).Format(time.RFC3339), Direction: "EXIT"},
+		{
+			UserID:    "user123",
+			DeviceID:  "dev001",
+			Timestamp: time.Now().Format(time.RFC3339),
+			Direction: "ENTRY",
+		},
+		{
+			UserID:    "user456",
+			DeviceID:  "dev002",
+			Timestamp: time.Now().Format(time.RFC3339),
+			Direction: "EXIT",
+		},
 	}
 
-	if err := logger.WriteLogs(logs); err != nil {
-		log.Fatalf("Failed to write user-device logs to HDFS: %v", err)
+	if err := service.WriteLogs(logs); err != nil {
+		log.Fatalf("Failed to write logs: %v", err)
+	}
+
+	// Example: Adding a single entry
+	if err := service.AddLogEntry("user789", "dev003", "ENTRY"); err != nil {
+		log.Fatalf("Failed to add log entry: %v", err)
 	}
 }
